@@ -1,3 +1,5 @@
+using System.Collections;
+using NUnit.Framework;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -10,6 +12,7 @@ public class Player : Entity
     private PlayerAction actions;
     private Vector2 moveInput;
     private CharacterController controller;
+    private Vector3 moveDirection;
     
 
     [SerializeField]
@@ -24,6 +27,27 @@ public class Player : Entity
     public int attackDamage = 10;
     public float attackRange = 1.5f;
 
+    [SerializeField]
+    private bool isVulnerable = false;
+
+    [SerializeField]
+    private bool isDodging = false;
+
+    [SerializeField]
+    private bool canDodge = true;
+
+    [SerializeField]
+    private float dodgeDuration = 0.3f;
+
+    [SerializeField]
+    private float dodgeDistance = 6f;
+
+    [SerializeField]
+    private float dodgeCooldown = 1f;
+
+    private float MIN_MOVEMENT_THRESHOLD = 0.1f; 
+
+
     protected override void Awake()
     {
         base.Awake();
@@ -35,21 +59,22 @@ public class Player : Entity
         actions.Movement.Move.canceled += ctx => moveInput = Vector2.zero;
 
         actions.Movement.Attack.performed += ctx => Attack();
+        actions.Movement.Dodge.performed += ctx => OnDodge();
     }
 
     void Update()
     {
-        Vector3 direction = new Vector3(moveInput.x, 0, moveInput.y);
+        moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
 
         Vector3 cameraForward = new Vector3(cameraTransform.forward.x, 0f, cameraTransform.forward.z).normalized;
         Vector3 cameraRight = new Vector3(cameraTransform.right.x, 0f, cameraTransform.right.z).normalized;
 
         // rotate and move player based on camera direction
-        Vector3 move = cameraForward * direction.z + cameraRight * direction.x;
+        Vector3 move = cameraForward * moveDirection.z + cameraRight * moveDirection.x;
         move.y = config.GRAVITY;
 
 
-        if (move.magnitude >= 0.01f)
+        if (move.magnitude >= MIN_MOVEMENT_THRESHOLD && !isDodging)
         {
             MovePlayer(move);
             RotatePlayer(move);
@@ -92,7 +117,7 @@ public class Player : Entity
             hitObject.GetComponent<Entity>()?.TakeDamage(attackDamage);
         }
     }
-    
+
     void OnDrawGizmosSelected()
     {
         if (attackPoint == null)
@@ -100,5 +125,36 @@ public class Player : Entity
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
+
+    void OnDodge()
+    {
+        if (isDodging || !canDodge)
+        {
+            return;
+        }
+        StartCoroutine(PerformDodge(transform.forward));
+    }
+    
+    private IEnumerator PerformDodge(Vector3 direction)
+    {
+        canDodge = false;
+        isDodging = true;
+        isVulnerable = true;
+
+        float elapse = 0f;
+        Vector3 dodgeVelocity = direction * (dodgeDistance / dodgeDuration);
+
+        while (elapse < dodgeDuration)
+        {
+            controller.Move(dodgeVelocity * Time.deltaTime);
+            elapse += Time.deltaTime;
+            yield return null;
+        }
+
+        isDodging = false;
+        isVulnerable = false;
+        yield return new WaitForSeconds(dodgeCooldown);
+        canDodge = true;
     }
 }

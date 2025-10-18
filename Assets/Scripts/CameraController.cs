@@ -33,8 +33,7 @@ public class Camera : MonoBehaviour
         transform.position = target.position + Vector3.up * height + direction * distanceFromPlayer;
         Vector3 lookPoint = target.position + Vector3.up;
         Quaternion lookRotation = Quaternion.LookRotation(lookPoint - transform.position);
-
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
+        transform.rotation = lookRotation;
     }
 
 }

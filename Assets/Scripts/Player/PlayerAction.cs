@@ -117,6 +117,15 @@ public partial class @PlayerAction: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Dodge"",
+                    ""type"": ""Button"",
+                    ""id"": ""cfd1c3a4-9fe4-4d89-ae59-761e4124f3ae"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -218,6 +227,28 @@ public partial class @PlayerAction: IInputActionCollection2, IDisposable
                     ""action"": ""LookRotation"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""60ab088a-7ce1-4634-8a81-7bc075d5f020"",
+                    ""path"": ""<Keyboard>/c"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Dodge"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4489b296-689c-4eb6-96fa-c6916a886022"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Dodge"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -229,6 +260,7 @@ public partial class @PlayerAction: IInputActionCollection2, IDisposable
         m_Movement_Move = m_Movement.FindAction("Move", throwIfNotFound: true);
         m_Movement_Attack = m_Movement.FindAction("Attack", throwIfNotFound: true);
         m_Movement_LookRotation = m_Movement.FindAction("LookRotation", throwIfNotFound: true);
+        m_Movement_Dodge = m_Movement.FindAction("Dodge", throwIfNotFound: true);
     }
 
     ~@PlayerAction()
@@ -312,6 +344,7 @@ public partial class @PlayerAction: IInputActionCollection2, IDisposable
     private readonly InputAction m_Movement_Move;
     private readonly InputAction m_Movement_Attack;
     private readonly InputAction m_Movement_LookRotation;
+    private readonly InputAction m_Movement_Dodge;
     /// <summary>
     /// Provides access to input actions defined in input action map "Movement".
     /// </summary>
@@ -335,6 +368,10 @@ public partial class @PlayerAction: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Movement/LookRotation".
         /// </summary>
         public InputAction @LookRotation => m_Wrapper.m_Movement_LookRotation;
+        /// <summary>
+        /// Provides access to the underlying input action "Movement/Dodge".
+        /// </summary>
+        public InputAction @Dodge => m_Wrapper.m_Movement_Dodge;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -370,6 +407,9 @@ public partial class @PlayerAction: IInputActionCollection2, IDisposable
             @LookRotation.started += instance.OnLookRotation;
             @LookRotation.performed += instance.OnLookRotation;
             @LookRotation.canceled += instance.OnLookRotation;
+            @Dodge.started += instance.OnDodge;
+            @Dodge.performed += instance.OnDodge;
+            @Dodge.canceled += instance.OnDodge;
         }
 
         /// <summary>
@@ -390,6 +430,9 @@ public partial class @PlayerAction: IInputActionCollection2, IDisposable
             @LookRotation.started -= instance.OnLookRotation;
             @LookRotation.performed -= instance.OnLookRotation;
             @LookRotation.canceled -= instance.OnLookRotation;
+            @Dodge.started -= instance.OnDodge;
+            @Dodge.performed -= instance.OnDodge;
+            @Dodge.canceled -= instance.OnDodge;
         }
 
         /// <summary>
@@ -451,5 +494,12 @@ public partial class @PlayerAction: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnLookRotation(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Dodge" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDodge(InputAction.CallbackContext context);
     }
 }

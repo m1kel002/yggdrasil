@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : Entity
@@ -89,7 +90,7 @@ public class Enemy : Entity
     {
         if (other.CompareTag(targetTag))
         {
-            Debug.Log("Player is on range" + other.transform.position);
+            Debug.Log("Player is on range: " + other.transform.position);
             isPlayerInRange = true;
             targetPosition = other.transform;
         }
@@ -107,10 +108,16 @@ public class Enemy : Entity
         {
             lastAttackTime = Time.time;
             Collider[] hitObjects = Physics.OverlapSphere(attackPoint.position, attackRange, playerMask);
+            HashSet<Entity> damagedEntities = new HashSet<Entity>();
             foreach (Collider hitObject in hitObjects)
             {
-                Debug.Log("Attacking Player!");
-                hitObject.GetComponent<Entity>()?.TakeDamage(attackDamage);
+                Entity entity = hitObject.GetComponent<Entity>();
+                if (entity != null && !damagedEntities.Contains(entity))
+                {
+                    Debug.Log("Attacking Player!");
+                    entity.TakeDamage(attackDamage);
+                    damagedEntities.Add(entity);
+                }
             }
 
         }
@@ -119,7 +126,10 @@ public class Enemy : Entity
     void OnDrawGizmosSelected()
     {
         if (attackPoint == null)
+        {
+            Debug.Log("No Attack point set");
             return;
+        }
 
         Gizmos.color = Color.red;
         Gizmos.DrawSphere(attackPoint.position, attackRange);
