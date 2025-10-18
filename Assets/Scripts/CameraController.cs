@@ -11,12 +11,6 @@ public class Camera : MonoBehaviour
     private float height = 6f;
 
     [SerializeField]
-    private float heightOffset = 1.5f;
-
-    [SerializeField]
-    private float rotationSpeed = 5f;
-
-    [SerializeField]
     private float cameraTilt = -35f;
 
     public LayerMask collisionMask;

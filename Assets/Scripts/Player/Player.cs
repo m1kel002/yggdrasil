@@ -9,6 +9,7 @@ public class Player : Entity
     public Transform cameraTransform;
     private Config config;
 
+    // Movement
     private PlayerAction actions;
     private Vector2 moveInput;
     private CharacterController controller;
@@ -30,6 +31,7 @@ public class Player : Entity
     [SerializeField]
     private bool isVulnerable = false;
 
+    // Dodge
     [SerializeField]
     private bool isDodging = false;
 
@@ -45,8 +47,16 @@ public class Player : Entity
     [SerializeField]
     private float dodgeCooldown = 1f;
 
-    private float MIN_MOVEMENT_THRESHOLD = 0.1f; 
+    private float MIN_MOVEMENT_THRESHOLD = 0.1f;
 
+    // Interact
+    public LayerMask interactableMask;
+
+    [SerializeField]
+    private Transform interactPoint;
+
+    [SerializeField]
+    private float interactRange = 1.5f;
 
     protected override void Awake()
     {
@@ -54,12 +64,22 @@ public class Player : Entity
         config = new Config();
         actions = new PlayerAction();
         controller = GetComponent<CharacterController>();
+        CheckRequiredComponents();
 
         actions.Movement.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         actions.Movement.Move.canceled += ctx => moveInput = Vector2.zero;
 
-        actions.Movement.Attack.performed += ctx => Attack();
+        actions.Movement.Attack.performed += ctx => OnAttack();
         actions.Movement.Dodge.performed += ctx => OnDodge();
+        actions.Movement.Interact.performed += ctx => OnPickUpItem();
+    }
+
+    void CheckRequiredComponents()
+    {
+        if (!interactPoint)
+        {
+            Debug.LogError("Interact point is missing");
+        }
     }
 
     void Update()
@@ -107,7 +127,7 @@ public class Player : Entity
         actions.Disable();
     }
 
-    void Attack()
+    void OnAttack()
     {
         Debug.Log("Attacking!");
         Collider[] hitObjects = Physics.OverlapSphere(attackPoint.position, attackRange, attackableLayer);
@@ -118,13 +138,14 @@ public class Player : Entity
         }
     }
 
-    void OnDrawGizmosSelected()
+    void OnPickUpItem()
     {
-        if (attackPoint == null)
-            return;
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+        Collider[] hitObjects = Physics.OverlapSphere(attackPoint.position, interactRange, interactableMask);
+        foreach (Collider hitObject in hitObjects)
+        {
+           Item itemDetails = hitObject.GetComponent<ItemComponent>()?.OnPickUp();
+            Debug.Log("Picked up Item: " + itemDetails.ItemName);
+        }
     }
 
     void OnDodge()
@@ -135,7 +156,7 @@ public class Player : Entity
         }
         StartCoroutine(PerformDodge(transform.forward));
     }
-    
+
     private IEnumerator PerformDodge(Vector3 direction)
     {
         canDodge = false;
@@ -157,4 +178,20 @@ public class Player : Entity
         yield return new WaitForSeconds(dodgeCooldown);
         canDodge = true;
     }
+
+    void OnDrawGizmosSelected()
+    {
+        if (attackPoint == null)
+            return;
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+
+        if (interactPoint == null)
+            return;
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(interactPoint.position, interactRange); 
+    }
+
 }
